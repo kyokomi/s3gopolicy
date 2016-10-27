@@ -29,6 +29,6 @@ func TestCreatePolicies(t *testing.T) {
 
 	fmt.Printf("%#v\n", policies)
 
-	as.Equal(policies.Form["policy"], "eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMForMDk6MDAiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJob2dlaG9nZWZ1Z2FmdWdhLmFtYXpvbmF3cy5jb20ifSx7ImtleSI6ImZpbGVzL2ltYWdlMS5wbmcifSx7IkNvbnRlbnQtVHlwZSI6ImltYWdlL3BuZyJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDIwMDAsMjAwMF1dfQ==")
-	as.Equal(policies.Form["signature"], "W41MfAMOAdhiweHec9so/xdO5mo=")
+	as.Equal(policies.Form.Policy, "eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMForMDk6MDAiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJob2dlaG9nZWZ1Z2FmdWdhLmFtYXpvbmF3cy5jb20ifSx7ImtleSI6ImZpbGVzL2ltYWdlMS5wbmcifSx7IkNvbnRlbnQtVHlwZSI6ImltYWdlL3BuZyJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDIwMDAsMjAwMF1dfQ==")
+	as.Equal(policies.Form.Signature, "W41MfAMOAdhiweHec9so/xdO5mo=")
 }

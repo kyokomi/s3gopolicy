@@ -27,7 +27,16 @@ type UploadConfig struct {
 // UploadPolicies Amazon s3 upload policies
 type UploadPolicies struct {
 	URL  string
-	Form map[string]string
+	Form PoliciesForm
+}
+
+// PoliciesForm is upload policies formData
+type PoliciesForm struct {
+	AWSAccessKeyID string `json:"AWSAccessKeyId"`
+	ObjectKey      string `json:"key"`
+	ContentType    string `json:"Content-Type"`
+	Signature      string `json:"signature"`
+	Policy         string `json:"policy"`
 }
 
 // PolicyJSON is policy rule
@@ -69,12 +78,12 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 	uploadURL := fmt.Sprintf(uploadURLFormat, fileInfo.BucketName)
 	return UploadPolicies{
 		URL: uploadURL,
-		Form: map[string]string{
-			"AWSAccessKeyId": awsCredentials.AWSAccessKeyID,
-			"key":            fileInfo.ObjectKey,
-			"Content-Type":   fileInfo.ContentType,
-			"signature":      signature,
-			"policy":         policy,
+		Form: PoliciesForm{
+			AWSAccessKeyID: awsCredentials.AWSAccessKeyID,
+			ObjectKey:      fileInfo.ObjectKey,
+			ContentType:    fileInfo.ContentType,
+			Signature:      signature,
+			Policy:         policy,
 		},
 	}, nil
 }
