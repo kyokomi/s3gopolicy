@@ -47,7 +47,9 @@ type PolicyJSON struct {
 
 const expirationTimeFormat = "2006-01-02T15:04:05ZZ07:00"
 const expirationHour = 1 * time.Hour
-const uploadURLFormat = "http://%s.s3.amazonaws.com/" // <bucketName>
+
+// UploadURLFormat upload url format
+const UploadURLFormat = "http://%s.s3.amazonaws.com/" // <bucketName>
 
 // NowTime mockable time.Now()
 var NowTime = func() time.Time {
@@ -75,7 +77,7 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 	expectedMAC := mac.Sum(nil)
 	signature := strings.Replace(base64.StdEncoding.EncodeToString(expectedMAC), "\n", "", -1)
 
-	uploadURL := fmt.Sprintf(uploadURLFormat, fileInfo.BucketName)
+	uploadURL := fmt.Sprintf(UploadURLFormat, fileInfo.BucketName)
 	return UploadPolicies{
 		URL: uploadURL,
 		Form: PoliciesForm{
