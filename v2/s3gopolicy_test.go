@@ -3,10 +3,9 @@ package s3gopolicy_test
 import (
 	"fmt"
 	"testing"
-
 	"time"
 
-	"github.com/kyokomi/s3gopolicy"
+	"github.com/kyokomi/s3gopolicy/v2"
 	"github.com/stretchr/testify/assert"
 )
 
