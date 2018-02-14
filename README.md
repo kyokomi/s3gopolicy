@@ -28,24 +28,24 @@ import (
 )
 
 func main() {
-  policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
-    Region:         "ap-northeast-1",
-    AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
-    AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
-  }, s3gopolicy.UploadConfig{
-    UploadURL:   "https://s3-ap-northeast-1.amazonaws.com/test.bucket",
-    BucketName:  "test.bucket",
-    ObjectKey:   "files/kyokomi/test.mov",
-    ContentType: "video/quicktime",
-    FileSize:    113381558,
-    MetaData: map[string]string{
-      "x-amz-meta-fileName": "test.mov",
-    },
-  })
-  
-  if err := openFileUpload(policies.URL, "./test.mov", policies); err != nil {
-    log.Fatal(err)
-  }
+	policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+		Region:         "ap-northeast-1",
+		AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
+		AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
+	}, s3gopolicy.UploadConfig{
+		UploadURL:   "https://s3-ap-northeast-1.amazonaws.com/test.bucket",
+		BucketName:  "test.bucket",
+		ObjectKey:   "files/kyokomi/test.mov",
+		ContentType: "video/quicktime",
+		FileSize:    113381558,
+		MetaData: map[string]string{
+			"x-amz-meta-fileName": "test.mov",
+		},
+	})
+
+	if err := openFileUpload(policies.URL, "./test.mov", policies); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func openFileUpload(url, file string, policies s3gopolicy.UploadPolicies) (err error) {
