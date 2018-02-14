@@ -23,7 +23,7 @@ type UploadConfig struct {
 	ObjectKey   string
 	ContentType string
 	FileSize    int64
-	MetaData    map[string]string
+	MetaData    []map[string]string
 }
 
 // UploadPolicies Amazon s3 upload policies
@@ -65,8 +65,10 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 		map[string]string{"Content-Type": fileInfo.ContentType},
 		[]interface{}{"content-length-range", fileInfo.FileSize, fileInfo.FileSize},
 	}
-	for k, v := range fileInfo.MetaData {
-		conditions = append(conditions, map[string]string{k: v})
+	for i := range fileInfo.MetaData {
+		for k, v := range fileInfo.MetaData[i] {
+			conditions = append(conditions, map[string]string{k: v})
+		}
 	}
 	data, err := json.Marshal(&PolicyJSON{
 		Expiration: NowTime().Add(expirationHour).Format(expirationTimeFormat),
