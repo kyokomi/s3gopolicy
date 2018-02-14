@@ -23,6 +23,7 @@ type UploadConfig struct {
 	ObjectKey   string
 	ContentType string
 	FileSize    int64
+	MetaData    map[string]string
 }
 
 // UploadPolicies Amazon s3 upload policies
@@ -58,14 +59,18 @@ var NowTime = func() time.Time {
 
 // CreatePolicies create amazon s3 to upload policies return
 func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (UploadPolicies, error) {
+	conditions := []interface{}{
+		map[string]string{"bucket": fileInfo.BucketName},
+		map[string]string{"key": fileInfo.ObjectKey},
+		map[string]string{"Content-Type": fileInfo.ContentType},
+		[]interface{}{"content-length-range", fileInfo.FileSize, fileInfo.FileSize},
+	}
+	for k, v := range fileInfo.MetaData {
+		conditions = append(conditions, map[string]string{k: v})
+	}
 	data, err := json.Marshal(&PolicyJSON{
 		Expiration: NowTime().Add(expirationHour).Format(expirationTimeFormat),
-		Conditions: []interface{}{
-			map[string]string{"bucket": fileInfo.BucketName},
-			map[string]string{"key": fileInfo.ObjectKey},
-			map[string]string{"Content-Type": fileInfo.ContentType},
-			[]interface{}{"content-length-range", fileInfo.FileSize, fileInfo.FileSize},
-		},
+		Conditions: conditions,
 	})
 	if err != nil {
 		return UploadPolicies{}, err
