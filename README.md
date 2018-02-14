@@ -5,6 +5,8 @@ Authenticating Requests in Browser-Based Uploads Using POST (AWS Signature Versi
 ## AWS Signature Version v4
 https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html
 
+### Install
+
 ```shell
 go get github.com/kyokomi/s3gopolicy/v4
 ```
@@ -107,6 +109,8 @@ func openFileUpload(url, file string, policies s3gopolicy.UploadPolicies) (err e
 
 ## v2
 http://docs.aws.amazon.com/ja_jp/AmazonS3/latest/dev/UsingHTTPPOST.html
+
+### Install
 
 ```shell
 go get github.com/kyokomi/s3gopolicy/v2
