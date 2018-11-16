@@ -13,7 +13,7 @@ func TestCreatePolicies(t *testing.T) {
 	as := assert.New(t)
 
 	s3gopolicy.NowTime = func() time.Time {
-		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.Local)
+		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC)
 	}
 
 	policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
@@ -28,6 +28,8 @@ func TestCreatePolicies(t *testing.T) {
 
 	fmt.Printf("%#v\n", policies)
 
-	as.Equal(policies.Form.Policy, "eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMForMDk6MDAiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJob2dlaG9nZWZ1Z2FmdWdhLmFtYXpvbmF3cy5jb20ifSx7ImtleSI6ImZpbGVzL2ltYWdlMS5wbmcifSx7IkNvbnRlbnQtVHlwZSI6ImltYWdlL3BuZyJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDIwMDAsMjAwMF1dfQ==")
-	as.Equal(policies.Form.Signature, "W41MfAMOAdhiweHec9so/xdO5mo=")
+	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMFpaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoiaG9nZWhvZ2VmdWdhZnVnYS5hbWF6b25hd3MuY29tIn0seyJrZXkiOiJmaWxlcy9pbWFnZTEucG5nIn0seyJDb250ZW50LVR5cGUiOiJpbWFnZS9wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwyMDAwLDIwMDBdXX0=",
+		policies.Form.Policy)
+	as.Equal("FPI4mtudW6IZjj05ZsOWvug3TZA=",
+		policies.Form.Signature)
 }
