@@ -21,7 +21,7 @@ func TestCreatePolicies(t *testing.T) {
 	_ = as
 
 	s3gopolicy.NowTime = func() time.Time {
-		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.Local)
+		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC)
 	}
 
 	policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
@@ -39,8 +39,10 @@ func TestCreatePolicies(t *testing.T) {
 		},
 	})
 
-	as.Equal(policies.Form["Policy"], "eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMForMDk6MDAiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJ0ZXN0LmJ1Y2tldCJ9LHsia2V5IjoiZmlsZXMva3lva29taS90ZXN0Lm1vdiJ9LHsiQ29udGVudC1UeXBlIjoidmlkZW8vcXVpY2t0aW1lIn0sWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsMTEzMzgxNTU4LDExMzM4MTU1OF0seyJ4LWFtei1jcmVkZW50aWFsIjoiXHUwMDNjQVdTX0FDQ0VTU19LRVlfSURcdTAwM2UvMjAxNjEyMDkvYXAtbm9ydGhlYXN0LTEvczMvYXdzNF9yZXF1ZXN0In0seyJ4LWFtei1hbGdvcml0aG0iOiJBV1M0LUhNQUMtU0hBMjU2In0seyJ4LWFtei1kYXRlIjoiMjAxNjEyMTBUMDAwMDAwWiJ9LHsieC1hbXotbWV0YS1maWxlTmFtZSI6InRlc3QubW92In1dfQ==")
-	as.Equal(policies.Form["X-Amz-Signature"], "dea7915cd0c356e393018195d0876b46f9c7f91d9daa4ff3ba90b12cc6e6d6c2")
+	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMFpaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoidGVzdC5idWNrZXQifSx7ImtleSI6ImZpbGVzL2t5b2tvbWkvdGVzdC5tb3YifSx7IkNvbnRlbnQtVHlwZSI6InZpZGVvL3F1aWNrdGltZSJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDExMzM4MTU1OCwxMTMzODE1NThdLHsieC1hbXotY3JlZGVudGlhbCI6Ilx1MDAzY0FXU19BQ0NFU1NfS0VZX0lEXHUwMDNlLzIwMTYxMjEwL2FwLW5vcnRoZWFzdC0xL3MzL2F3czRfcmVxdWVzdCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotZGF0ZSI6IjIwMTYxMjEwVDAwMDAwMFoifSx7IngtYW16LW1ldGEtZmlsZU5hbWUiOiJ0ZXN0Lm1vdiJ9XX0=",
+		policies.Form["Policy"])
+	as.Equal("21678aaeddd0c8f3082c891321c18d89e4007b0ca20f2909268a87f0bf2522e9",
+		policies.Form["X-Amz-Signature"])
 }
 
 func testUpload(url, file string, policies s3gopolicy.UploadPolicies) (err error) {
