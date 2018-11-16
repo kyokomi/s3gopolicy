@@ -1,5 +1,8 @@
 s3gopolicy
 =========================================
+
+[![CircleCI](https://circleci.com/gh/kyokomi/s3gopolicy/tree/master.svg?style=svg)](https://circleci.com/gh/kyokomi/s3gopolicy/tree/master)
+
 Authenticating Requests in Browser-Based Uploads Using POST (AWS Signature Version 2 or 4) for golang
 
 ## AWS Signature Version v4
