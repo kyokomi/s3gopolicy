@@ -1,4 +1,4 @@
-module v2
+module s3gopolicy
 
 go 1.19
 
