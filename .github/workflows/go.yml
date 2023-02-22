@@ -14,12 +14,12 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          working-directory: ./v2/...
+          working-directory: ./v2
       - name: golangci-lint v4
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-          working-directory: ./v4/...
+          working-directory: ./v4
       - run: go test -v -coverprofile=profile.cov ./...
       - uses: shogo82148/actions-goveralls@v1
         with:
