@@ -1,7 +1,7 @@
 s3gopolicy
 =========================================
 
-[![CircleCI](https://circleci.com/gh/kyokomi/s3gopolicy/tree/master.svg?style=svg)](https://circleci.com/gh/kyokomi/s3gopolicy/tree/master) [![codecov](https://codecov.io/gh/kyokomi/s3gopolicy/branch/master/graph/badge.svg)](https://codecov.io/gh/kyokomi/s3gopolicy)
+[![go](https://github.com/kyokomi/s3gopolicy/actions/workflows/go.yml/badge.svg)](https://github.com/kyokomi/s3gopolicy/actions/workflows/go.yml) [![codecov](https://codecov.io/gh/kyokomi/s3gopolicy/branch/master/graph/badge.svg)](https://codecov.io/gh/kyokomi/s3gopolicy)
 
 Authenticating Requests in Browser-Based Uploads Using POST (AWS Signature Version 2 or 4) for golang
 
