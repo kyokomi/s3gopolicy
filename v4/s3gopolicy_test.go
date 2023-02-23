@@ -14,17 +14,38 @@ import (
 
 	"github.com/kyokomi/s3gopolicy/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreatePolicies(t *testing.T) {
-	as := assert.New(t)
-	_ = as
-
 	s3gopolicy.NowTime = func() time.Time {
 		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC)
 	}
 
-	policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+		Region:         "ap-northeast-1",
+		AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
+		AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
+	}, s3gopolicy.UploadConfig{
+		UploadURL:   "https://s3-ap-northeast-1.amazonaws.com/test.bucket",
+		BucketName:  "test.bucket",
+		ObjectKey:   "files/kyokomi/test.mov",
+		ContentType: "video/quicktime",
+		FileSize:    113381558,
+		MetaData: map[string]string{
+			"x-amz-meta-fileName": "test.mov",
+		},
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, "eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMFpaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoidGVzdC5idWNrZXQifSx7ImtleSI6ImZpbGVzL2t5b2tvbWkvdGVzdC5tb3YifSx7IkNvbnRlbnQtVHlwZSI6InZpZGVvL3F1aWNrdGltZSJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDExMzM4MTU1OCwxMTMzODE1NThdLHsieC1hbXotY3JlZGVudGlhbCI6Ilx1MDAzY0FXU19BQ0NFU1NfS0VZX0lEXHUwMDNlLzIwMTYxMjEwL2FwLW5vcnRoZWFzdC0xL3MzL2F3czRfcmVxdWVzdCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotZGF0ZSI6IjIwMTYxMjEwVDAwMDAwMFoifSx7IngtYW16LW1ldGEtZmlsZU5hbWUiOiJ0ZXN0Lm1vdiJ9XX0=",
+		policies.Form["Policy"])
+	assert.Equal(t, "21678aaeddd0c8f3082c891321c18d89e4007b0ca20f2909268a87f0bf2522e9",
+		policies.Form["X-Amz-Signature"])
+}
+
+func ExampleCreatePolicies() {
+	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
 		Region:         "ap-northeast-1",
 		AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
 		AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
@@ -39,10 +60,13 @@ func TestCreatePolicies(t *testing.T) {
 		},
 	})
 
-	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMFpaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoidGVzdC5idWNrZXQifSx7ImtleSI6ImZpbGVzL2t5b2tvbWkvdGVzdC5tb3YifSx7IkNvbnRlbnQtVHlwZSI6InZpZGVvL3F1aWNrdGltZSJ9LFsiY29udGVudC1sZW5ndGgtcmFuZ2UiLDExMzM4MTU1OCwxMTMzODE1NThdLHsieC1hbXotY3JlZGVudGlhbCI6Ilx1MDAzY0FXU19BQ0NFU1NfS0VZX0lEXHUwMDNlLzIwMTYxMjEwL2FwLW5vcnRoZWFzdC0xL3MzL2F3czRfcmVxdWVzdCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotZGF0ZSI6IjIwMTYxMjEwVDAwMDAwMFoifSx7IngtYW16LW1ldGEtZmlsZU5hbWUiOiJ0ZXN0Lm1vdiJ9XX0=",
-		policies.Form["Policy"])
-	as.Equal("21678aaeddd0c8f3082c891321c18d89e4007b0ca20f2909268a87f0bf2522e9",
-		policies.Form["X-Amz-Signature"])
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := testUpload(policies.URL, "files/kyokomi/test.mov", policies); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func testUpload(url, file string, policies s3gopolicy.UploadPolicies) (err error) {
