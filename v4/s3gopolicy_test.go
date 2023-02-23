@@ -64,7 +64,7 @@ func ExampleCreatePolicies() {
 		log.Fatalln(err)
 	}
 
-	if err := testUpload(policies.URL, "image.png", policies); err != nil {
+	if err := testUpload(policies.URL, "files/kyokomi/test.mov", policies); err != nil {
 		log.Fatalln(err)
 	}
 }
