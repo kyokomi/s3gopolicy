@@ -50,7 +50,7 @@ type PolicyJSON struct {
 const expirationTimeFormat = "2006-01-02T15:04:05ZZ07:00"
 const expirationHour = 1 * time.Hour
 
-const defaultUploadURLFormat = "http://%s.s3.amazonaws.com/" // <bucketName>
+const defaultUploadURLFormat = "https://%s.s3.amazonaws.com/" // <bucketName>
 
 // NowTime mockable time.Now()
 var NowTime = func() time.Time {

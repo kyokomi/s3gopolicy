@@ -58,7 +58,7 @@ const (
 	algorithm                = "AWS4-HMAC-SHA256"
 	serviceName              = "s3"
 
-	defaultUploadURLFormat = "http://%s.s3.amazonaws.com/" // <bucketName>
+	defaultUploadURLFormat = "https://%s.s3.amazonaws.com/" // <bucketName>
 	defaultExpirationHour  = 1 * time.Hour
 )
 
