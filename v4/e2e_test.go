@@ -8,11 +8,15 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/kyokomi/s3gopolicy/v4"
 	"github.com/stretchr/testify/require"
 )
+
+var e2eHTTPClient = &http.Client{Timeout: 10 * time.Second}
 
 func e2eEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
@@ -22,7 +26,9 @@ func e2eEnv(key, fallback string) string {
 }
 
 func e2eCreatePolicies(t *testing.T, content []byte) s3gopolicy.UploadPolicies {
-	endpoint := e2eEnv("S3GOPOLICY_E2E_ENDPOINT", "http://localhost:9000")
+	t.Helper()
+
+	endpoint := strings.TrimSuffix(e2eEnv("S3GOPOLICY_E2E_ENDPOINT", "http://localhost:9000"), "/")
 	bucket := e2eEnv("S3GOPOLICY_E2E_BUCKET", "e2e-bucket")
 
 	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
@@ -43,7 +49,9 @@ func e2eCreatePolicies(t *testing.T, content []byte) s3gopolicy.UploadPolicies {
 	return policies
 }
 
-func e2ePostForm(t *testing.T, url string, fields map[string]string, content []byte) (int, string) {
+func e2eBuildForm(t *testing.T, fields map[string]string, content []byte) (io.Reader, string) {
+	t.Helper()
+
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	for k, v := range fields {
@@ -54,18 +62,24 @@ func e2ePostForm(t *testing.T, url string, fields map[string]string, content []b
 	_, err = fw.Write(content)
 	require.NoError(t, err)
 	require.NoError(t, w.Close())
+	return &b, w.FormDataContentType()
+}
 
-	req, err := http.NewRequest(http.MethodPost, url, &b)
+func e2ePostForm(t *testing.T, url string, fields map[string]string, content []byte) (int, string) {
+	t.Helper()
+
+	body, contentType := e2eBuildForm(t, fields, content)
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	require.NoError(t, err)
-	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Content-Type", contentType)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := e2eHTTPClient.Do(req)
 	require.NoError(t, err)
 	defer func() { _ = res.Body.Close() }()
 
-	body, err := io.ReadAll(res.Body)
+	resBody, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
-	return res.StatusCode, string(body)
+	return res.StatusCode, string(resBody)
 }
 
 func TestE2EUpload(t *testing.T) {
@@ -88,7 +102,6 @@ func TestE2EUploadRejectsTamperedSignature(t *testing.T) {
 func TestE2EUploadRejectsPolicyMismatch(t *testing.T) {
 	content := bytes.Repeat([]byte("a"), 1024)
 	policies := e2eCreatePolicies(t, content)
-	// content-length-rangeの条件(FileSizeと同一サイズ)に反するサイズで送る
 	tooLarge := bytes.Repeat([]byte("a"), 2048)
 
 	status, body := e2ePostForm(t, policies.URL, policies.Form, tooLarge)
