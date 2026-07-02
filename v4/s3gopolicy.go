@@ -81,8 +81,7 @@ var NowTime = func() time.Time {
 // CreatePolicies create amazon s3 to upload policies return
 // https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html
 func CreatePolicies(awsCredentials AWSCredentials, uploadConfig UploadConfig) (UploadPolicies, error) {
-	// x-amz-dateとexpirationはUTCであることが要求されるため、credentialや署名キーと
-	// 日付がズレないようにUTCへ変換してから使う
+	// AWS署名の日付とポリシーの日時はUTCで生成する必要がある
 	nowTime := NowTime().UTC()
 	credential := awsCredentials.buildCredential(nowTime)
 	data, err := buildSign(nowTime, credential, uploadConfig)

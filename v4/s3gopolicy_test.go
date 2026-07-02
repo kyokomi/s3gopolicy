@@ -2,6 +2,8 @@ package s3gopolicy_test
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -16,10 +18,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func mockNowTime(t *testing.T, tm time.Time) {
+	orig := s3gopolicy.NowTime
+	s3gopolicy.NowTime = func() time.Time { return tm }
+	t.Cleanup(func() { s3gopolicy.NowTime = orig })
+}
+
 func TestCreatePolicies(t *testing.T) {
-	s3gopolicy.NowTime = func() time.Time {
-		return time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC)
-	}
+	mockNowTime(t, time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC))
 
 	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
 		Region:         "ap-northeast-1",
@@ -41,34 +47,47 @@ func TestCreatePolicies(t *testing.T) {
 		policies.Form["Policy"])
 	assert.Equal(t, "1d0eb723e5d0c774791c0a2442e9b44ffc400ca573d8566a5c3106ead10abc1e",
 		policies.Form["X-Amz-Signature"])
+
+	policyJSON, err := base64.StdEncoding.DecodeString(policies.Form["Policy"])
+	require.NoError(t, err)
+	var policy struct {
+		Expiration string `json:"expiration"`
+	}
+	require.NoError(t, json.Unmarshal(policyJSON, &policy))
+	assert.Equal(t, "2016-12-10T01:00:00.000Z", policy.Expiration)
 }
 
-// ローカルタイムがUTC以外でも、UTCで生成した場合と同じ結果になることを確認する
+// NowTimeがUTC以外のタイムゾーンでも、UTCと同じポリシー・署名になることを確認する
 func TestCreatePoliciesNonUTC(t *testing.T) {
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	s3gopolicy.NowTime = func() time.Time {
-		return time.Date(2016, time.December, 10, 9, 0, 0, 0, jst) // UTCの2016-12-10T00:00:00Zと同時刻
+	utcTime := time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC)
+	jstTime := utcTime.In(time.FixedZone("Asia/Tokyo", 9*60*60))
+
+	createPolicies := func(tm time.Time) s3gopolicy.UploadPolicies {
+		mockNowTime(t, tm)
+		policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+			Region:         "ap-northeast-1",
+			AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
+			AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
+		}, s3gopolicy.UploadConfig{
+			UploadURL:   "https://s3-ap-northeast-1.amazonaws.com/test.bucket",
+			BucketName:  "test.bucket",
+			ObjectKey:   "files/kyokomi/test.mov",
+			ContentType: "video/quicktime",
+			FileSize:    113381558,
+			MetaData: map[string]string{
+				"x-amz-meta-fileName": "test.mov",
+			},
+		})
+		require.NoError(t, err)
+		return policies
 	}
 
-	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
-		Region:         "ap-northeast-1",
-		AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
-		AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
-	}, s3gopolicy.UploadConfig{
-		UploadURL:   "https://s3-ap-northeast-1.amazonaws.com/test.bucket",
-		BucketName:  "test.bucket",
-		ObjectKey:   "files/kyokomi/test.mov",
-		ContentType: "video/quicktime",
-		FileSize:    113381558,
-		MetaData: map[string]string{
-			"x-amz-meta-fileName": "test.mov",
-		},
-	})
-	require.NoError(t, err)
+	utcPolicies := createPolicies(utcTime)
+	jstPolicies := createPolicies(jstTime)
 
-	assert.Equal(t, "20161210T000000Z", policies.Form["X-Amz-Date"])
-	assert.Equal(t, "1d0eb723e5d0c774791c0a2442e9b44ffc400ca573d8566a5c3106ead10abc1e",
-		policies.Form["X-Amz-Signature"])
+	assert.Equal(t, utcPolicies.Form["Policy"], jstPolicies.Form["Policy"])
+	assert.Equal(t, utcPolicies.Form["X-Amz-Signature"], jstPolicies.Form["X-Amz-Signature"])
+	assert.Equal(t, "20161210T000000Z", jstPolicies.Form["X-Amz-Date"])
 }
 
 func TestCreatePoliciesDefaultUploadURL(t *testing.T) {
