@@ -74,7 +74,6 @@ func TestCreatePoliciesNonUTC(t *testing.T) {
 	assert.Equal(t, utcPolicies.Form.Signature, jstPolicies.Form.Signature)
 }
 
-// MetaDataはポリシーのconditionsに含まれるため、フォーム送信用にUploadPoliciesでも返されることを確認する
 func TestCreatePoliciesWithMetaData(t *testing.T) {
 	as := assert.New(t)
 

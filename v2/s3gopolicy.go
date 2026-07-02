@@ -30,9 +30,7 @@ type UploadConfig struct {
 type UploadPolicies struct {
 	URL  string
 	Form PoliciesForm
-	// MetaData is x-amz-meta-* fields included in the policy conditions.
-	// ポリシーのconditionsに含まれるため、アップロード時はFormの各フィールドと
-	// あわせてこれらもフォームフィールドとして送信する必要がある
+	// MetaData is the signed x-amz-meta-* fields to send as form fields along with Form.
 	MetaData []map[string]string
 }
 
