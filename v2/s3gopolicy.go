@@ -53,6 +53,7 @@ const expirationHour = 1 * time.Hour
 // defaultUploadURL builds the virtual-hosted style upload URL.
 // ドットを含むバケット名は *.s3.amazonaws.com のワイルドカード証明書に一致せず
 // httpsでは証明書エラーになるため、httpのままにする。
+// https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html
 func defaultUploadURL(bucketName string) string {
 	if strings.Contains(bucketName, ".") {
 		return fmt.Sprintf("http://%s.s3.amazonaws.com/", bucketName)
