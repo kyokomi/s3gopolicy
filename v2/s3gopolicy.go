@@ -47,7 +47,7 @@ type PolicyJSON struct {
 	Conditions []interface{} `json:"conditions"`
 }
 
-const expirationTimeFormat = "2006-01-02T15:04:05ZZ07:00"
+const expirationTimeFormat = "2006-01-02T15:04:05.000Z"
 const expirationHour = 1 * time.Hour
 
 // defaultUploadURL builds the virtual-hosted style upload URL.
@@ -80,7 +80,7 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 		}
 	}
 	data, err := json.Marshal(&PolicyJSON{
-		Expiration: NowTime().Add(expirationHour).Format(expirationTimeFormat),
+		Expiration: NowTime().UTC().Add(expirationHour).Format(expirationTimeFormat),
 		Conditions: conditions,
 	})
 	if err != nil {
