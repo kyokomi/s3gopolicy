@@ -30,6 +30,10 @@ type UploadConfig struct {
 type UploadPolicies struct {
 	URL  string
 	Form PoliciesForm
+	// MetaData is x-amz-meta-* fields included in the policy conditions.
+	// ポリシーのconditionsに含まれるため、アップロード時はFormの各フィールドと
+	// あわせてこれらもフォームフィールドとして送信する必要がある
+	MetaData []map[string]string
 }
 
 // PoliciesForm is upload policies formData
@@ -106,5 +110,6 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 			Signature:      signature,
 			Policy:         policy,
 		},
+		MetaData: fileInfo.MetaData,
 	}, nil
 }
