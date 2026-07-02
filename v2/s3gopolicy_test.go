@@ -74,6 +74,37 @@ func TestCreatePoliciesNonUTC(t *testing.T) {
 	assert.Equal(t, utcPolicies.Form.Signature, jstPolicies.Form.Signature)
 }
 
+func TestCreatePoliciesWithMetaData(t *testing.T) {
+	as := assert.New(t)
+
+	mockNowTime(t, time.Date(2016, time.December, 10, 0, 0, 0, 0, time.UTC))
+
+	metaData := []map[string]string{
+		{"x-amz-meta-fileName": "image1.png"},
+	}
+	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+		AWSAccessKeyID: "AWS_ACCESS_KEY_ID",
+		AWSSecretKeyID: "AWS_SECRET_KEY_ID",
+	}, s3gopolicy.UploadConfig{
+		BucketName:  "examplebucket",
+		ObjectKey:   "files/image1.png",
+		ContentType: "image/png",
+		FileSize:    2000,
+		MetaData:    metaData,
+	})
+	require.NoError(t, err)
+
+	as.Equal(metaData, policies.MetaData)
+
+	policyJSON, err := base64.StdEncoding.DecodeString(policies.Form.Policy)
+	require.NoError(t, err)
+	var policy struct {
+		Conditions []any `json:"conditions"`
+	}
+	require.NoError(t, json.Unmarshal(policyJSON, &policy))
+	as.Contains(policy.Conditions, map[string]any{"x-amz-meta-fileName": "image1.png"})
+}
+
 func TestCreatePoliciesDefaultUploadURL(t *testing.T) {
 	tests := []struct {
 		name       string

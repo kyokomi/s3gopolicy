@@ -30,6 +30,8 @@ type UploadConfig struct {
 type UploadPolicies struct {
 	URL  string
 	Form PoliciesForm
+	// MetaData is the signed x-amz-meta-* fields to send as form fields along with Form.
+	MetaData []map[string]string
 }
 
 // PoliciesForm is upload policies formData
@@ -106,5 +108,6 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 			Signature:      signature,
 			Policy:         policy,
 		},
+		MetaData: fileInfo.MetaData,
 	}, nil
 }
