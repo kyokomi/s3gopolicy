@@ -78,11 +78,11 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 		return UploadPolicies{}, err
 	}
 
-	policy := strings.Replace(base64.StdEncoding.EncodeToString(data), "\n", "", -1)
+	policy := strings.ReplaceAll(base64.StdEncoding.EncodeToString(data), "\n", "")
 	mac := hmac.New(sha1.New, []byte(awsCredentials.AWSSecretKeyID))
 	mac.Write([]byte(policy))
 	expectedMAC := mac.Sum(nil)
-	signature := strings.Replace(base64.StdEncoding.EncodeToString(expectedMAC), "\n", "", -1)
+	signature := strings.ReplaceAll(base64.StdEncoding.EncodeToString(expectedMAC), "\n", "")
 
 	uploadURL := fileInfo.UploadURL
 	if uploadURL == "" {

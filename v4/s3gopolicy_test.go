@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -75,7 +74,7 @@ func testUpload(url, file string, policies s3gopolicy.UploadPolicies) (err error
 	if err != nil {
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	fileInfo, _ := f.Stat()
 	log.Println(fileInfo.Size())
@@ -120,7 +119,7 @@ func testUpload(url, file string, policies s3gopolicy.UploadPolicies) (err error
 
 	// Check the response
 	err = fmt.Errorf("status code: %s", res.Status)
-	data, _ := ioutil.ReadAll(res.Body)
+	data, _ := io.ReadAll(res.Body)
 	log.Printf("response:%s\n", string(data))
 	return
 }
