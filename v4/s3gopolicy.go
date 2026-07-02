@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -58,9 +59,19 @@ const (
 	algorithm                = "AWS4-HMAC-SHA256"
 	serviceName              = "s3"
 
-	defaultUploadURLFormat = "http://%s.s3.amazonaws.com/" // <bucketName>
-	defaultExpirationHour  = 1 * time.Hour
+	defaultExpirationHour = 1 * time.Hour
 )
+
+// defaultUploadURL builds the virtual-hosted style upload URL.
+// ドットを含むバケット名は *.s3.amazonaws.com のワイルドカード証明書に一致せず
+// httpsでは証明書エラーになるため、httpのままにする。
+// https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html
+func defaultUploadURL(bucketName string) string {
+	if strings.Contains(bucketName, ".") {
+		return fmt.Sprintf("http://%s.s3.amazonaws.com/", bucketName)
+	}
+	return fmt.Sprintf("https://%s.s3.amazonaws.com/", bucketName)
+}
 
 // NowTime mockable time.Now()
 var NowTime = func() time.Time {
@@ -86,7 +97,7 @@ func CreatePolicies(awsCredentials AWSCredentials, uploadConfig UploadConfig) (U
 
 	uploadURL := uploadConfig.UploadURL
 	if uploadURL == "" {
-		uploadURL = fmt.Sprintf(defaultUploadURLFormat, uploadConfig.BucketName)
+		uploadURL = defaultUploadURL(uploadConfig.BucketName)
 	}
 	form := map[string]string{
 		"key":              uploadConfig.ObjectKey,
