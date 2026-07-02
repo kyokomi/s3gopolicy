@@ -50,7 +50,15 @@ type PolicyJSON struct {
 const expirationTimeFormat = "2006-01-02T15:04:05ZZ07:00"
 const expirationHour = 1 * time.Hour
 
-const defaultUploadURLFormat = "https://%s.s3.amazonaws.com/" // <bucketName>
+// defaultUploadURL builds the virtual-hosted style upload URL.
+// ドットを含むバケット名は *.s3.amazonaws.com のワイルドカード証明書に一致せず
+// httpsでは証明書エラーになるため、httpのままにする。
+func defaultUploadURL(bucketName string) string {
+	if strings.Contains(bucketName, ".") {
+		return fmt.Sprintf("http://%s.s3.amazonaws.com/", bucketName)
+	}
+	return fmt.Sprintf("https://%s.s3.amazonaws.com/", bucketName)
+}
 
 // NowTime mockable time.Now()
 var NowTime = func() time.Time {
@@ -86,7 +94,7 @@ func CreatePolicies(awsCredentials AWSCredentials, fileInfo UploadConfig) (Uploa
 
 	uploadURL := fileInfo.UploadURL
 	if uploadURL == "" {
-		uploadURL = fmt.Sprintf(defaultUploadURLFormat, fileInfo.BucketName)
+		uploadURL = defaultUploadURL(fileInfo.BucketName)
 	}
 	return UploadPolicies{
 		URL: uploadURL,

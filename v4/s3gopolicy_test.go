@@ -43,6 +43,33 @@ func TestCreatePolicies(t *testing.T) {
 		policies.Form["X-Amz-Signature"])
 }
 
+func TestCreatePoliciesDefaultUploadURL(t *testing.T) {
+	tests := []struct {
+		name       string
+		bucketName string
+		wantURL    string
+	}{
+		{"bucket without dots uses https", "examplebucket", "https://examplebucket.s3.amazonaws.com/"},
+		{"bucket with dots keeps http", "test.bucket", "http://test.bucket.s3.amazonaws.com/"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+				Region:         "ap-northeast-1",
+				AWSAccessKeyID: "<AWS_ACCESS_KEY_ID>",
+				AWSSecretKeyID: "<AWS_SECRET_KEY_ID>",
+			}, s3gopolicy.UploadConfig{
+				BucketName:  tt.bucketName,
+				ObjectKey:   "files/image1.png",
+				ContentType: "image/png",
+				FileSize:    2000,
+			})
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantURL, policies.URL)
+		})
+	}
+}
+
 func ExampleCreatePolicies() {
 	policies, err := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
 		Region:         "ap-northeast-1",
