@@ -53,7 +53,7 @@ type PolicyJSON struct {
 }
 
 const (
-	expirationTimeFormat     = "2006-01-02T15:04:05ZZ07:00"
+	expirationTimeFormat     = "2006-01-02T15:04:05.000Z"
 	amzDateISO8601TimeFormat = "20060102T150405Z"
 	shortTimeFormat          = "20060102"
 	algorithm                = "AWS4-HMAC-SHA256"
@@ -81,7 +81,9 @@ var NowTime = func() time.Time {
 // CreatePolicies create amazon s3 to upload policies return
 // https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html
 func CreatePolicies(awsCredentials AWSCredentials, uploadConfig UploadConfig) (UploadPolicies, error) {
-	nowTime := NowTime()
+	// x-amz-dateとexpirationはUTCであることが要求されるため、credentialや署名キーと
+	// 日付がズレないようにUTCへ変換してから使う
+	nowTime := NowTime().UTC()
 	credential := awsCredentials.buildCredential(nowTime)
 	data, err := buildSign(nowTime, credential, uploadConfig)
 	if err != nil {

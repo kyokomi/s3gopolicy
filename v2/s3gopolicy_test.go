@@ -28,9 +28,34 @@ func TestCreatePolicies(t *testing.T) {
 
 	fmt.Printf("%#v\n", policies)
 
-	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMFpaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoiaG9nZWhvZ2VmdWdhZnVnYS5hbWF6b25hd3MuY29tIn0seyJrZXkiOiJmaWxlcy9pbWFnZTEucG5nIn0seyJDb250ZW50LVR5cGUiOiJpbWFnZS9wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwyMDAwLDIwMDBdXX0=",
+	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMC4wMDBaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoiaG9nZWhvZ2VmdWdhZnVnYS5hbWF6b25hd3MuY29tIn0seyJrZXkiOiJmaWxlcy9pbWFnZTEucG5nIn0seyJDb250ZW50LVR5cGUiOiJpbWFnZS9wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwyMDAwLDIwMDBdXX0=",
 		policies.Form.Policy)
-	as.Equal("FPI4mtudW6IZjj05ZsOWvug3TZA=",
+	as.Equal("ToFz/ggBRhVyYBRjUUz718HSLA8=",
+		policies.Form.Signature)
+}
+
+// ローカルタイムがUTC以外でも、UTCで生成した場合と同じ結果になることを確認する
+func TestCreatePoliciesNonUTC(t *testing.T) {
+	as := assert.New(t)
+
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	s3gopolicy.NowTime = func() time.Time {
+		return time.Date(2016, time.December, 10, 9, 0, 0, 0, jst) // UTCの2016-12-10T00:00:00Zと同時刻
+	}
+
+	policies, _ := s3gopolicy.CreatePolicies(s3gopolicy.AWSCredentials{
+		AWSAccessKeyID: "AWS_ACCESS_KEY_ID",
+		AWSSecretKeyID: "AWS_SECRET_KEY_ID",
+	}, s3gopolicy.UploadConfig{
+		BucketName:  "hogehogefugafuga.amazonaws.com",
+		ObjectKey:   "files/image1.png",
+		ContentType: "image/png",
+		FileSize:    2000,
+	})
+
+	as.Equal("eyJleHBpcmF0aW9uIjoiMjAxNi0xMi0xMFQwMTowMDowMC4wMDBaIiwiY29uZGl0aW9ucyI6W3siYnVja2V0IjoiaG9nZWhvZ2VmdWdhZnVnYS5hbWF6b25hd3MuY29tIn0seyJrZXkiOiJmaWxlcy9pbWFnZTEucG5nIn0seyJDb250ZW50LVR5cGUiOiJpbWFnZS9wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwyMDAwLDIwMDBdXX0=",
+		policies.Form.Policy)
+	as.Equal("ToFz/ggBRhVyYBRjUUz718HSLA8=",
 		policies.Form.Signature)
 }
 
