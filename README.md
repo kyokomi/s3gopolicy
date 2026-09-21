@@ -131,8 +131,8 @@ E2E tests upload to a local [MinIO](https://min.io/) server and are excluded fro
 
 ```shell
 # Start MinIO and create the test bucket
-docker run -d --name minio -p 9000:9000 minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
-docker run --rm --network host --entrypoint sh minio/mc:RELEASE.2025-08-13T08-35-41Z \
+docker run -d --name minio -p 9000:9000 quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+docker run --rm --network host --entrypoint sh quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z \
   -c "mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/e2e-bucket"
 
 # Run E2E tests
