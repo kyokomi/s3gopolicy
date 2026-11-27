@@ -29,9 +29,10 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-      - name: Start MinIO
+      - name: Start SeaweedFS
         run: |
-          docker run -d --name minio -p 9000:9000 quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
-          timeout 60 sh -c 'until curl -sf http://localhost:9000/minio/health/live; do sleep 1; done'
-          docker run --rm --network host --entrypoint sh quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z -c "mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/e2e-bucket"
+          docker run -d --name seaweedfs -p 127.0.0.1:9000:8333 \
+            -e AWS_ACCESS_KEY_ID=minioadmin -e AWS_SECRET_ACCESS_KEY=minioadmin \
+            -e S3_BUCKET=e2e-bucket chrislusf/seaweedfs:4.55
+          timeout 60 sh -c 'until curl -fsS http://127.0.0.1:9000/healthz; do sleep 1; done'
       - run: go test -tags e2e -run TestE2E -v ./...

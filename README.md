@@ -127,19 +127,20 @@ go test ./...
 
 ### E2E tests
 
-E2E tests upload to a local [MinIO](https://min.io/) server and are excluded from normal `go test` runs by the `e2e` build tag.
+E2E tests upload to a local [SeaweedFS](https://github.com/seaweedfs/seaweedfs) server and are excluded from normal `go test` runs by the `e2e` build tag.
 
 ```shell
-# Start MinIO and create the test bucket
-docker run -d --name minio -p 9000:9000 quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
-docker run --rm --network host --entrypoint sh quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z \
-  -c "mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/e2e-bucket"
+# Start SeaweedFS with test credentials and create the test bucket
+docker run -d --name seaweedfs -p 127.0.0.1:9000:8333 \
+  -e AWS_ACCESS_KEY_ID=minioadmin -e AWS_SECRET_ACCESS_KEY=minioadmin \
+  -e S3_BUCKET=e2e-bucket chrislusf/seaweedfs:4.55
+curl -fsS --retry 30 --retry-connrefused --retry-delay 1 http://127.0.0.1:9000/healthz
 
 # Run E2E tests
 go test -tags e2e -run TestE2E -v ./...
 
 # Cleanup
-docker rm -f minio
+docker rm -f seaweedfs
 ```
 
 The endpoint, bucket, and credentials can be overridden with `S3GOPOLICY_E2E_ENDPOINT`, `S3GOPOLICY_E2E_BUCKET`, `S3GOPOLICY_E2E_ACCESS_KEY`, and `S3GOPOLICY_E2E_SECRET_KEY`.
